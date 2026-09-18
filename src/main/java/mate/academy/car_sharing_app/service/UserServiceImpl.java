@@ -2,10 +2,10 @@ package mate.academy.car_sharing_app.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import mate.academy.car_sharing_app.dto.UserRegistrationRequestDto;
-import mate.academy.car_sharing_app.dto.UserResponseDto;
-import mate.academy.car_sharing_app.dto.UserRoleUpdateRequestDto;
-import mate.academy.car_sharing_app.dto.UserUpdateRequestDto;
+import mate.academy.car_sharing_app.dto.userDto.UserRegistrationRequestDto;
+import mate.academy.car_sharing_app.dto.userDto.UserResponseDto;
+import mate.academy.car_sharing_app.dto.userDto.UserRoleUpdateRequestDto;
+import mate.academy.car_sharing_app.dto.userDto.UserUpdateRequestDto;
 import mate.academy.car_sharing_app.exception.RegistrationException;
 import mate.academy.car_sharing_app.exception.UserException;
 import mate.academy.car_sharing_app.mapper.UserMapper;

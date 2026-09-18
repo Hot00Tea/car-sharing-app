@@ -2,9 +2,9 @@ package mate.academy.car_sharing_app.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import mate.academy.car_sharing_app.dto.UserResponseDto;
-import mate.academy.car_sharing_app.dto.UserRoleUpdateRequestDto;
-import mate.academy.car_sharing_app.dto.UserUpdateRequestDto;
+import mate.academy.car_sharing_app.dto.userDto.UserResponseDto;
+import mate.academy.car_sharing_app.dto.userDto.UserRoleUpdateRequestDto;
+import mate.academy.car_sharing_app.dto.userDto.UserUpdateRequestDto;
 import mate.academy.car_sharing_app.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
