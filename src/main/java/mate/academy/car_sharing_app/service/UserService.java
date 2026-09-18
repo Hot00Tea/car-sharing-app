@@ -1,9 +1,9 @@
 package mate.academy.car_sharing_app.service;
 
-import mate.academy.car_sharing_app.dto.UserRegistrationRequestDto;
-import mate.academy.car_sharing_app.dto.UserResponseDto;
-import mate.academy.car_sharing_app.dto.UserRoleUpdateRequestDto;
-import mate.academy.car_sharing_app.dto.UserUpdateRequestDto;
+import mate.academy.car_sharing_app.dto.userDto.UserRegistrationRequestDto;
+import mate.academy.car_sharing_app.dto.userDto.UserResponseDto;
+import mate.academy.car_sharing_app.dto.userDto.UserRoleUpdateRequestDto;
+import mate.academy.car_sharing_app.dto.userDto.UserUpdateRequestDto;
 
 public interface UserService {
 
