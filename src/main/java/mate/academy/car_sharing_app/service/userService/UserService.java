@@ -1,4 +1,4 @@
-package mate.academy.car_sharing_app.service;
+package mate.academy.car_sharing_app.service.userService;
 
 import mate.academy.car_sharing_app.dto.userDto.UserRegistrationRequestDto;
 import mate.academy.car_sharing_app.dto.userDto.UserResponseDto;

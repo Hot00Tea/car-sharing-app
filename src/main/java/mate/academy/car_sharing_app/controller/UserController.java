@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import mate.academy.car_sharing_app.dto.userDto.UserResponseDto;
 import mate.academy.car_sharing_app.dto.userDto.UserRoleUpdateRequestDto;
 import mate.academy.car_sharing_app.dto.userDto.UserUpdateRequestDto;
-import mate.academy.car_sharing_app.service.UserService;
+import mate.academy.car_sharing_app.service.userService.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
