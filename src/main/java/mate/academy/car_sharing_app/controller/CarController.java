@@ -6,7 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mate.academy.car_sharing_app.dto.carDto.CarRequestDto;
 import mate.academy.car_sharing_app.dto.carDto.CarResponseDto;
-import mate.academy.car_sharing_app.service.CarService;
+import mate.academy.car_sharing_app.service.carService.CarService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -30,14 +30,14 @@ public class CarController {
 
     private final CarService carService;
 
-    @PreAuthorize("hasRole('CUSTOMER', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'MANAGER')")
     @GetMapping
     @Operation(summary = "Get all cars", description = "Get a list of all available cars")
     public Page<CarResponseDto> findAll(Pageable pageable) {
         return carService.getAll(pageable);
     }
 
-    @PreAuthorize("hasRole('CUSTOMER', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'MANAGER')")
     @GetMapping("/{id}")
     public CarResponseDto findById(@PathVariable Long id) {
         return carService.findById(id);

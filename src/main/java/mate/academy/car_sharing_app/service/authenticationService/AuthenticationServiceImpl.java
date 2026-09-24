@@ -1,4 +1,4 @@
-package mate.academy.car_sharing_app.service;
+package mate.academy.car_sharing_app.service.authenticationService;
 
 import lombok.RequiredArgsConstructor;
 import mate.academy.car_sharing_app.dto.userDto.UserLoginRequestDto;

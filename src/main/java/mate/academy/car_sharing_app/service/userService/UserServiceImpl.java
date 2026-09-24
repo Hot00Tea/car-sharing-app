@@ -1,4 +1,4 @@
-package mate.academy.car_sharing_app.service;
+package mate.academy.car_sharing_app.service.userService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
