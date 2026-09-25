@@ -14,6 +14,7 @@ import mate.academy.car_sharing_app.model.User;
 import mate.academy.car_sharing_app.repository.CarRepository;
 import mate.academy.car_sharing_app.repository.RentalRepository;
 import mate.academy.car_sharing_app.repository.UserRepository;
+import mate.academy.car_sharing_app.service.notificationService.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,8 @@ public class RentalServiceImpl implements RentalService {
     private final RentalMapper rentalMapper;
 
     private final UserRepository userRepository;
+
+    private final NotificationService notificationService;
 
     @Override
     public RentalResponseDto createRental(String email, RentalRequestDto requestDto) {
@@ -53,7 +56,11 @@ public class RentalServiceImpl implements RentalService {
         car.setInventory(car.getInventory() - 1);
         carRepository.save(car);
         rentalRepository.save(rental);
-        return rentalMapper.toDto(rental);
+        RentalResponseDto responseDto = rentalMapper.toDto(rental);
+
+        notificationService.sendMessage(
+                buildRentalNotification(responseDto));
+        return responseDto;
     }
 
     @Override
@@ -152,5 +159,31 @@ public class RentalServiceImpl implements RentalService {
         }
 
         return rentalMapper.toDto(rental);
+    }
+
+    private String buildRentalNotification(RentalResponseDto rental) {
+        return String.format(
+                """
+                🚗 New rental created!
+    
+                Rental ID: %d
+                User ID: %d
+    
+                Car: %s %s
+                Type: %s
+                Daily fee: $%.2f
+    
+                Rental date: %s
+                Return date: %s
+                """,
+                rental.getId(),
+                rental.getUserId(),
+                rental.getCar().getBrand(),
+                rental.getCar().getModel(),
+                rental.getCar().getType(),
+                rental.getCar().getDailyFee(),
+                rental.getRentalDate(),
+                rental.getReturnDate()
+        );
     }
 }
