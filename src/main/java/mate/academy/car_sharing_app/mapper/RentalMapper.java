@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface RentalMapper {
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "rentalDate", ignore = true)
     @Mapping(target = "actualReturnDate", ignore = true)
     @Mapping(target = "car", ignore = true)
