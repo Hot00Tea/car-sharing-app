@@ -6,7 +6,7 @@ import mate.academy.car_sharing_app.dto.carDto.CarRequestDto;
 import mate.academy.car_sharing_app.dto.carDto.CarResponseDto;
 import mate.academy.car_sharing_app.exception.CarException;
 import mate.academy.car_sharing_app.mapper.CarMapper;
-import mate.academy.car_sharing_app.model.Car;
+import mate.academy.car_sharing_app.model.car.Car;
 import mate.academy.car_sharing_app.repository.CarRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

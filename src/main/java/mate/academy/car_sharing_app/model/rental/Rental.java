@@ -1,4 +1,4 @@
-package mate.academy.car_sharing_app.model;
+package mate.academy.car_sharing_app.model.rental;
 
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.ManyToOne;
@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import mate.academy.car_sharing_app.model.car.Car;
+import mate.academy.car_sharing_app.model.user.User;
 
 import java.time.LocalDate;
 

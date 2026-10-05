@@ -8,9 +8,9 @@ import mate.academy.car_sharing_app.exception.CarException;
 import mate.academy.car_sharing_app.exception.RentalException;
 import mate.academy.car_sharing_app.exception.UserException;
 import mate.academy.car_sharing_app.mapper.RentalMapper;
-import mate.academy.car_sharing_app.model.Car;
-import mate.academy.car_sharing_app.model.Rental;
-import mate.academy.car_sharing_app.model.User;
+import mate.academy.car_sharing_app.model.car.Car;
+import mate.academy.car_sharing_app.model.rental.Rental;
+import mate.academy.car_sharing_app.model.user.User;
 import mate.academy.car_sharing_app.repository.CarRepository;
 import mate.academy.car_sharing_app.repository.RentalRepository;
 import mate.academy.car_sharing_app.repository.UserRepository;
@@ -19,7 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
-import static mate.academy.car_sharing_app.model.Role.CUSTOMER;
+import static mate.academy.car_sharing_app.model.user.Role.CUSTOMER;
 
 @Service
 @Transactional

@@ -1,4 +1,4 @@
-package mate.academy.car_sharing_app.model;
+package mate.academy.car_sharing_app.model.car;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -10,6 +10,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.math.BigDecimal;
 
 @Getter

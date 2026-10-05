@@ -1,4 +1,4 @@
-package mate.academy.car_sharing_app.model;
+package mate.academy.car_sharing_app.model.car;
 
 public enum CarType {
     SEDAN,

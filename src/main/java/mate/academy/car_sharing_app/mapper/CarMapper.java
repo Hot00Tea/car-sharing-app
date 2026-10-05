@@ -2,7 +2,7 @@ package mate.academy.car_sharing_app.mapper;
 
 import mate.academy.car_sharing_app.dto.carDto.CarRequestDto;
 import mate.academy.car_sharing_app.dto.carDto.CarResponseDto;
-import mate.academy.car_sharing_app.model.Car;
+import mate.academy.car_sharing_app.model.car.Car;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

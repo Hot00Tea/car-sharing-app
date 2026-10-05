@@ -10,3 +10,7 @@ databaseChangeLog:
   - include:
       file: changes/003-create-rentals-table.yaml
       relativeToChangelogFile: true
+
+  - include:
+      file: changes/004-create-payments-table.yaml
+      relativeToChangelogFile: true

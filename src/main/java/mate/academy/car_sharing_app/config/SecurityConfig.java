@@ -40,6 +40,8 @@ public class SecurityConfig {
                                 "/register",
                                 "/login",
                                 "/swagger-ui/**",
+                                "/payments/success",
+                                "/payments/cancel",
                                 "/v3/api-docs/**")
                         .permitAll()
                         .anyRequest()

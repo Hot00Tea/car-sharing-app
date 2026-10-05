@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import mate.academy.car_sharing_app.repository.RentalRepository;
 import mate.academy.car_sharing_app.service.notificationService.NotificationService;
 import org.springframework.stereotype.Service;
-import mate.academy.car_sharing_app.model.Rental;
+import mate.academy.car_sharing_app.model.rental.Rental;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.LocalDate;
