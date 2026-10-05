@@ -2,7 +2,7 @@ package mate.academy.car_sharing_app.dto.carDto;
 
 import lombok.Getter;
 import lombok.Setter;
-import mate.academy.car_sharing_app.model.CarType;
+import mate.academy.car_sharing_app.model.car.CarType;
 import java.math.BigDecimal;
 
 @Getter

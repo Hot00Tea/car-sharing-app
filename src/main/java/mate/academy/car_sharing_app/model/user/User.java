@@ -1,4 +1,4 @@
-package mate.academy.car_sharing_app.model;
+package mate.academy.car_sharing_app.model.user;
 
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Enumerated;

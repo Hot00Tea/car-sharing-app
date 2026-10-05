@@ -1,6 +1,6 @@
 package mate.academy.car_sharing_app.repository;
 
-import mate.academy.car_sharing_app.model.Rental;
+import mate.academy.car_sharing_app.model.rental.Rental;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

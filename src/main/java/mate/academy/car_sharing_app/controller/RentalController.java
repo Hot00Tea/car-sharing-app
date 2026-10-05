@@ -60,9 +60,11 @@ public class RentalController {
     }
 
     @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get rental by id", description = "Get rental by id")
     public RentalResponseDto findById(
             Authentication authentication,
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
 
         return rentalService.getById(authentication.getName(), id);
     }
