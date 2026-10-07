@@ -9,9 +9,11 @@ import mate.academy.car_sharing_app.exception.RentalException;
 import mate.academy.car_sharing_app.exception.UserException;
 import mate.academy.car_sharing_app.mapper.RentalMapper;
 import mate.academy.car_sharing_app.model.car.Car;
+import mate.academy.car_sharing_app.model.payment.PaymentStatus;
 import mate.academy.car_sharing_app.model.rental.Rental;
 import mate.academy.car_sharing_app.model.user.User;
 import mate.academy.car_sharing_app.repository.CarRepository;
+import mate.academy.car_sharing_app.repository.PaymentRepository;
 import mate.academy.car_sharing_app.repository.RentalRepository;
 import mate.academy.car_sharing_app.repository.UserRepository;
 import mate.academy.car_sharing_app.service.notificationService.NotificationService;
@@ -19,6 +21,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.util.List;
+
 import static mate.academy.car_sharing_app.model.user.Role.CUSTOMER;
 
 @Service
@@ -36,6 +40,8 @@ public class RentalServiceImpl implements RentalService {
 
     private final NotificationService notificationService;
 
+    private final PaymentRepository paymentRepository;
+
     @Override
     public RentalResponseDto createRental(String email, RentalRequestDto requestDto) {
         Car car = carRepository.findById(requestDto.getCarId()).orElseThrow(
@@ -45,6 +51,11 @@ public class RentalServiceImpl implements RentalService {
         User user = userRepository.findByEmail(email).orElseThrow(
                 () -> new UserException("Can`t find user by email: " + email)
         );
+
+        if (paymentRepository.existsByRentalUserIdAndStatusIn(user.getId(),
+                List.of(PaymentStatus.EXPIRED, PaymentStatus.PENDING))) {
+            throw new RentalException("User has an unpaid payment");
+        }
 
         if (car.getInventory() <= 0) {
             throw new RentalException("No cars in stock");

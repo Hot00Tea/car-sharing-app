@@ -15,4 +15,8 @@ public interface PaymentService {
     Page<PaymentResponseDto> getAll(String email, Long userId, Pageable pageable);
 
     PaymentResponseDto successPay(String sessionId) throws StripeException;
+
+    void checkExpiredPayments() throws StripeException;
+
+    PaymentResponseDto renewPay(String email, Long paymentId) throws StripeException;
 }
