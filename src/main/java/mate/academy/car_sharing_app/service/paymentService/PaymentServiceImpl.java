@@ -17,14 +17,17 @@ import mate.academy.car_sharing_app.model.user.User;
 import mate.academy.car_sharing_app.repository.PaymentRepository;
 import mate.academy.car_sharing_app.repository.RentalRepository;
 import mate.academy.car_sharing_app.repository.UserRepository;
+import mate.academy.car_sharing_app.service.notificationService.NotificationService;
 import mate.academy.car_sharing_app.service.stripeService.StripeService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import static mate.academy.car_sharing_app.model.user.Role.CUSTOMER;
 import static mate.academy.car_sharing_app.model.user.Role.MANAGER;
@@ -42,6 +45,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
 
     private final StripeService stripeService;
+
+    private final NotificationService notificationService;
 
     @Value("${FINE_MULTIPLIER}")
     private BigDecimal fineMultiplier;
@@ -150,7 +155,68 @@ public class PaymentServiceImpl implements PaymentService {
         if (session.getPaymentStatus().equals("paid")) {
             payment.setStatus(PaymentStatus.PAID);
             paymentRepository.save(payment);
+            String message = String.format(
+                    """
+                    💳 Payment successful!
+            
+                    Payment ID: %d
+                    Rental ID: %d
+                    User ID: %d
+            
+                    Amount: %.2f USD
+                    Type: %s
+                    Status: %s
+                    """,
+                    payment.getId(),
+                    payment.getRental().getId(),
+                    payment.getRental().getUser().getId(),
+                    payment.getAmountToPay(),
+                    payment.getType(),
+                    payment.getStatus()
+            );
+            notificationService.sendMessage(message);
         }
         return paymentMapper.toDto(payment);
+    }
+
+    @Override
+    public void checkExpiredPayments() throws StripeException {
+        List<Payment> paymentList = paymentRepository.findAllByStatus(PaymentStatus.PENDING);
+
+        for (Payment payment : paymentList) {
+            Session session = stripeService.findStripeSessionBySessionId(
+                    payment.getSessionId());
+            if (session.getExpiresAt() < Instant.now().getEpochSecond()) {
+                payment.setStatus(PaymentStatus.EXPIRED);
+                paymentRepository.save(payment);
+            }
+        }
+    }
+
+    @Override
+    public PaymentResponseDto renewPay(String email, Long paymentId) throws StripeException {
+
+        Payment payment = paymentRepository.findById(paymentId).orElseThrow(
+                () -> new PaymentException("Can`t find payment by id: " + paymentId)
+        );
+
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new UserException("Can`t find user by email: " + email)
+        );
+
+        if (payment.getStatus() != PaymentStatus.EXPIRED) {
+            throw new PaymentException("Payment can be renewed only if its status is EXPIRED");
+        }
+
+        if (payment.getRental().getUser().getId().equals(user.getId())) {
+            Session session = stripeService.createPaymentSession(payment.getAmountToPay());
+            payment.setStatus(PaymentStatus.PENDING);
+            payment.setSessionId(session.getId());
+            payment.setSessionUrl(session.getUrl());
+            paymentRepository.save(payment);
+            return paymentMapper.toDto(payment);
+        } else {
+            throw new PaymentException("User is not allowed to renew this payment");
+        }
     }
 }

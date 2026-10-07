@@ -67,4 +67,13 @@ public class PaymentController {
     public String cancelPay() {
         return "Payment was cancelled. You can pay later.";
     }
+
+    @PostMapping("/{id}/renew")
+    @Operation(summary = "Renew payment", description = "Renew payment")
+    @ResponseStatus(HttpStatus.CREATED)
+    public PaymentResponseDto renewPayment(Authentication authentication,
+                                           @PathVariable("id") Long paymentId) throws StripeException {
+        return paymentService.renewPay(authentication.getName(), paymentId);
+    }
+
 }

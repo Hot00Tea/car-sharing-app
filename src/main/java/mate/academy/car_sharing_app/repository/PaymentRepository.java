@@ -1,10 +1,13 @@
 package mate.academy.car_sharing_app.repository;
 
 import mate.academy.car_sharing_app.model.payment.Payment;
+import mate.academy.car_sharing_app.model.payment.PaymentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
@@ -14,4 +17,11 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Page<Payment> findAllByRentalUserId(Long userId, Pageable pageable);
 
     Optional<Payment> findBySessionId(String sessionId);
+
+    List<Payment> findAllByStatus(PaymentStatus status);
+
+    boolean existsByRentalUserIdAndStatusIn(
+            Long userId,
+            Collection<PaymentStatus> statuses
+    );
 }
