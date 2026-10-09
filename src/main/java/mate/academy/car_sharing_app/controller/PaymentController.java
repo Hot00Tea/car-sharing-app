@@ -13,18 +13,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Payment management", description = "Endpoint for managing payments")
-@RequiredArgsConstructor
 @RestController
 @RequestMapping("/payments")
+@RequiredArgsConstructor
 public class PaymentController {
 
     private final PaymentService paymentService;
@@ -34,31 +34,38 @@ public class PaymentController {
     @Operation(summary = "Create a new payment", description = "Create a new payment")
     public PaymentResponseDto createPayment(
             Authentication authentication,
-            @RequestBody @Valid PaymentRequestDto requestDto) throws StripeException {
-
-        return paymentService.createPayment(authentication.getName(), requestDto);
+            @Valid @RequestBody PaymentRequestDto requestDto)
+            throws StripeException {
+        return paymentService.createPayment(
+                authentication.getName(),
+                requestDto
+        );
     }
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all payments", description = "Get all payments")
-    public Page<PaymentResponseDto> getAll(Authentication authentication,
-                                           @RequestParam(value = "user_id", required = false) Long userId,
-                                           Pageable pageable) {
-
-        return paymentService.getAll(authentication.getName(), userId, pageable);
+    public Page<PaymentResponseDto> getAll(
+            Authentication authentication,
+            @RequestParam(value = "user_id", required = false) Long userId,
+            Pageable pageable) {
+        return paymentService.getAll(
+                authentication.getName(),
+                userId,
+                pageable
+        );
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get payment by id", description = "Get payment by id")
-    public PaymentResponseDto getById(Authentication authentication,
-                                      @PathVariable("id") Long id) {
+    public PaymentResponseDto getById(
+            Authentication authentication,
+            @PathVariable Long id) {
         return paymentService.getById(authentication.getName(), id);
     }
 
     @GetMapping("/success")
-    public PaymentResponseDto successPay(@RequestParam("session_id") String sessionId)
+    public PaymentResponseDto successPay(
+            @RequestParam("session_id") String sessionId)
             throws StripeException {
         return paymentService.successPay(sessionId);
     }
@@ -69,11 +76,14 @@ public class PaymentController {
     }
 
     @PostMapping("/{id}/renew")
-    @Operation(summary = "Renew payment", description = "Renew payment")
     @ResponseStatus(HttpStatus.CREATED)
-    public PaymentResponseDto renewPayment(Authentication authentication,
-                                           @PathVariable("id") Long paymentId) throws StripeException {
-        return paymentService.renewPay(authentication.getName(), paymentId);
+    @Operation(summary = "Renew payment", description = "Renew payment")
+    public PaymentResponseDto renewPayment(
+            Authentication authentication,
+            @PathVariable("id") Long paymentId) throws StripeException {
+        return paymentService.renewPay(
+                authentication.getName(),
+                paymentId
+        );
     }
-
 }

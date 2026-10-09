@@ -44,18 +44,14 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     public RentalResponseDto createRental(String email, RentalRequestDto requestDto) {
+
+        User user = getUserByEmail(email);
+
+        checkUnpaidPayments(user);
+
         Car car = carRepository.findById(requestDto.getCarId()).orElseThrow(
                 () -> new CarException("Can't find car by id: " + requestDto.getCarId())
         );
-
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UserException("Can`t find user by email: " + email)
-        );
-
-        if (paymentRepository.existsByRentalUserIdAndStatusIn(user.getId(),
-                List.of(PaymentStatus.EXPIRED, PaymentStatus.PENDING))) {
-            throw new RentalException("User has an unpaid payment");
-        }
 
         if (car.getInventory() <= 0) {
             throw new RentalException("No cars in stock");
@@ -76,21 +72,19 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     public RentalResponseDto returnRental(String email, Long rentalId) {
+
+        User user = getUserByEmail(email);
+
         Rental rental = rentalRepository.findById(rentalId).orElseThrow(
                 () -> new RentalException("Can`t find rental by id: " + rentalId)
         );
 
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UserException("Can`t find user by email: " + email)
-        );
-
-        if (!rental.getUser().getId().equals(user.getId())) {
-            throw new RentalException("User is not allowed to access this rental");
-        }
+        checkRentalOwnership(rental, user);
 
         if (rental.getActualReturnDate() != null) {
             throw new RentalException("Rental has already been returned");
         }
+
         rental.setActualReturnDate(LocalDate.now());
         Car car = rental.getCar();
         car.setInventory(car.getInventory() + 1);
@@ -106,57 +100,19 @@ public class RentalServiceImpl implements RentalService {
             Boolean isActive,
             Pageable pageable) {
 
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UserException("Can`t find user by email: " + email)
-        );
+        User user = getUserByEmail(email);
 
         if (user.getRole() == CUSTOMER) {
-            if (isActive == null) {
-                return rentalRepository.findAllByUserId(user.getId(), pageable)
-                        .map(rentalMapper::toDto);
-            }
-            if (Boolean.TRUE.equals(isActive)) {
-                return rentalRepository.findAllByUserIdAndActualReturnDateIsNull(
-                        user.getId(), pageable).map(rentalMapper::toDto);
-            }
-            if (Boolean.FALSE.equals(isActive)) {
-                return rentalRepository.findAllByUserIdAndActualReturnDateIsNotNull(
-                        user.getId(), pageable).map(rentalMapper::toDto);
-            }
-        } else {
-            if (userId == null && isActive == null) {
-                return rentalRepository.findAll(pageable).map(rentalMapper::toDto);
-            }
-            if (userId == null && Boolean.TRUE.equals(isActive)) {
-                return rentalRepository.findAllByActualReturnDateIsNull(pageable)
-                        .map(rentalMapper::toDto);
-            }
-            if (userId == null && Boolean.FALSE.equals(isActive)) {
-                return rentalRepository.findAllByActualReturnDateIsNotNull(pageable)
-                        .map(rentalMapper::toDto);
-            }
-            if (userId != null && isActive == null) {
-                return rentalRepository.findAllByUserId(userId, pageable)
-                        .map(rentalMapper::toDto);
-            }
-            if (userId != null && Boolean.TRUE.equals(isActive)) {
-                return rentalRepository.findAllByUserIdAndActualReturnDateIsNull(
-                        userId, pageable).map(rentalMapper::toDto);
-            }
-            if (userId != null && Boolean.FALSE.equals(isActive)) {
-                return rentalRepository.findAllByUserIdAndActualReturnDateIsNotNull(
-                        userId, pageable).map(rentalMapper::toDto);
-            }
-
+            return getCustomerRentals(user.getId(), isActive, pageable);
         }
-        throw new IllegalStateException("Invalid rental filter");
+
+        return getManagerRentals(userId, isActive, pageable);
     }
 
     @Override
     public RentalResponseDto getById(String email, Long id) {
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UserException("Can`t find user by email: " + email)
-        );
+
+        User user = getUserByEmail(email);
 
         Rental rental = rentalRepository.findById(id).orElseThrow(
                 () -> new RentalException("Can`t find rental by id: " + id)
@@ -170,6 +126,63 @@ public class RentalServiceImpl implements RentalService {
         }
 
         return rentalMapper.toDto(rental);
+    }
+
+    private Page<RentalResponseDto> getCustomerRentals(
+            Long userId,
+            Boolean isActive,
+            Pageable pageable) {
+
+        if (isActive == null) {
+            return rentalRepository.findAllByUserId(userId, pageable)
+                    .map(rentalMapper::toDto);
+        }
+
+        if (Boolean.TRUE.equals(isActive)) {
+            return rentalRepository.findAllByUserIdAndActualReturnDateIsNull(
+                            userId, pageable)
+                    .map(rentalMapper::toDto);
+        }
+
+        return rentalRepository.findAllByUserIdAndActualReturnDateIsNotNull(
+                        userId, pageable)
+                .map(rentalMapper::toDto);
+    }
+
+    private Page<RentalResponseDto> getManagerRentals(
+            Long userId,
+            Boolean isActive,
+            Pageable pageable) {
+
+        if (userId == null) {
+            if (isActive == null) {
+                return rentalRepository.findAll(pageable)
+                        .map(rentalMapper::toDto);
+            }
+
+            if (Boolean.TRUE.equals(isActive)) {
+                return rentalRepository.findAllByActualReturnDateIsNull(pageable)
+                        .map(rentalMapper::toDto);
+            }
+
+            return rentalRepository.findAllByActualReturnDateIsNotNull(pageable)
+                    .map(rentalMapper::toDto);
+        }
+
+        if (isActive == null) {
+            return rentalRepository.findAllByUserId(userId, pageable)
+                    .map(rentalMapper::toDto);
+        }
+
+        if (Boolean.TRUE.equals(isActive)) {
+            return rentalRepository.findAllByUserIdAndActualReturnDateIsNull(
+                            userId, pageable)
+                    .map(rentalMapper::toDto);
+        }
+
+        return rentalRepository.findAllByUserIdAndActualReturnDateIsNotNull(
+                        userId, pageable)
+                .map(rentalMapper::toDto);
     }
 
     private String buildRentalNotification(RentalResponseDto rental) {
@@ -196,5 +209,31 @@ public class RentalServiceImpl implements RentalService {
                 rental.getRentalDate(),
                 rental.getReturnDate()
         );
+    }
+
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new UserException("Can`t find user by email: " + email)
+        );
+    }
+
+    private void checkRentalOwnership(Rental rental, User user) {
+        if (!rental.getUser().getId().equals(user.getId())) {
+            throw new RentalException(
+                    "User is not allowed to access this rental"
+            );
+        }
+    }
+
+    private void checkUnpaidPayments(User user) {
+        boolean hasUnpaidPayment =
+                paymentRepository.existsByRentalUserIdAndStatusIn(
+                        user.getId(),
+                        List.of(PaymentStatus.EXPIRED, PaymentStatus.PENDING)
+                );
+
+        if (hasUnpaidPayment) {
+            throw new RentalException("User has an unpaid payment");
+        }
     }
 }

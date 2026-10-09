@@ -27,37 +27,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto register(UserRegistrationRequestDto request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RegistrationException(
-                    "User with email " + request.getEmail() + " already exists"
-            );
-        }
-
-        if (!request.getPassword().equals(request.getRepeatPassword())) {
-            throw new RegistrationException("Passwords do not match");
-        }
+        validateRegistration(request);
+        checkEmailAvailability(request.getEmail());
 
         User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(Role.CUSTOMER);
 
-        user = userRepository.save(user);
-
-        return userMapper.toDto(user);
+        return userMapper.toDto(userRepository.save(user));
     }
 
     @Override
     public UserResponseDto getCurrentUser(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException("Can't find user by: " + email));
-        return userMapper.toDto(user);
+        return userMapper.toDto(getUserByEmail(email));
     }
 
     @Override
-    public UserResponseDto updateUser(String email, UserUpdateRequestDto requestDto) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(
-                        "Can't find user by: " + email));
+    public UserResponseDto updateUser(
+            String email,
+            UserUpdateRequestDto requestDto) {
+        User user = getUserByEmail(email);
 
         if (StringUtils.hasText(requestDto.getFirstName())) {
             user.setFirstName(requestDto.getFirstName());
@@ -71,27 +60,44 @@ public class UserServiceImpl implements UserService {
             String newEmail = requestDto.getEmail().toLowerCase();
 
             if (!newEmail.equals(user.getEmail())) {
-                if (userRepository.existsByEmail(newEmail)) {
-                    throw new RegistrationException("Email already used");
-                }
-
+                checkEmailAvailability(newEmail);
                 user.setEmail(newEmail);
             }
         }
 
-        userRepository.save(user);
         return userMapper.toDto(user);
     }
 
     @Override
-    public UserResponseDto updateUserRole(Long id,
-                                          UserRoleUpdateRequestDto requestDto) {
+    public UserResponseDto updateUserRole(
+            Long id,
+            UserRoleUpdateRequestDto requestDto) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new UserException("Can't find user by: " + id));
+                () -> new UserException("Can't find user by: " + id)
+        );
 
         user.setRole(requestDto.getRole());
-        userRepository.save(user);
 
         return userMapper.toDto(user);
+    }
+
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new UserException("Can't find user by: " + email)
+        );
+    }
+
+    private void validateRegistration(UserRegistrationRequestDto request) {
+        if (!request.getPassword().equals(request.getRepeatPassword())) {
+            throw new RegistrationException("Passwords do not match");
+        }
+    }
+
+    private void checkEmailAvailability(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new RegistrationException(
+                    "User with email " + email + " already exists"
+            );
+        }
     }
 }

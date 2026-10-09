@@ -13,12 +13,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class CarServiceImpl implements CarService {
 
     private final CarRepository carRepository;
-
     private final CarMapper carMapper;
 
     @Override
@@ -35,28 +34,32 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public CarResponseDto findById(Long id) {
-        Car car = carRepository.findById(id).orElseThrow(
-                () -> new CarException("Can`t find car by id: " + id));
+        Car car = getCarById(id);
         return carMapper.toDto(car);
     }
 
     @Override
     public CarResponseDto updateCar(Long id, CarRequestDto carRequestDto) {
-        Car car = carRepository.findById(id).orElseThrow(
-                () -> new CarException("Can`t find car by id: " + id));
+        Car car = getCarById(id);
+
         car.setInventory(carRequestDto.getInventory());
         car.setModel(carRequestDto.getModel());
         car.setType(carRequestDto.getType());
         car.setDailyFee(carRequestDto.getDailyFee());
         car.setBrand(carRequestDto.getBrand());
-        carRepository.save(car);
+
         return carMapper.toDto(car);
     }
 
     @Override
     public void deleteById(Long id) {
-        Car car = carRepository.findById(id).orElseThrow(
-                () -> new CarException("Can`t find car by id: " + id));
-        carRepository.deleteById(id);
+        Car car = getCarById(id);
+        carRepository.delete(car);
+    }
+
+    private Car getCarById(Long id) {
+        return carRepository.findById(id).orElseThrow(
+                () -> new CarException("Can`t find car by id: " + id)
+        );
     }
 }
