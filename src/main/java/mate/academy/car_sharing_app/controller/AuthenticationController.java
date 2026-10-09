@@ -17,16 +17,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     private final UserService userService;
-
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public UserResponseDto register(@Valid @RequestBody UserRegistrationRequestDto request) {
+    public UserResponseDto register(
+            @Valid @RequestBody UserRegistrationRequestDto request) {
         return userService.register(request);
     }
 
     @PostMapping("/login")
-    public UserLoginResponseDto login(@Valid @RequestBody UserLoginRequestDto requestDto) {
+    public UserLoginResponseDto login(
+            @Valid @RequestBody UserLoginRequestDto requestDto) {
         return authenticationService.authenticate(requestDto);
     }
 }

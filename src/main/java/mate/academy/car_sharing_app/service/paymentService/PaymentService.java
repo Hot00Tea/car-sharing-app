@@ -16,7 +16,7 @@ public interface PaymentService {
 
     PaymentResponseDto successPay(String sessionId) throws StripeException;
 
-    void checkExpiredPayments() throws StripeException;
+    void checkExpiredPayments();
 
     PaymentResponseDto renewPay(String email, Long paymentId) throws StripeException;
 }

@@ -9,8 +9,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final JwtUtil jwtUtil;
@@ -18,11 +18,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public UserLoginResponseDto authenticate(UserLoginRequestDto request) {
-        final Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
         );
 
         String token = jwtUtil.generateToken(authentication.getName());
+
         return new UserLoginResponseDto(token);
     }
 }
