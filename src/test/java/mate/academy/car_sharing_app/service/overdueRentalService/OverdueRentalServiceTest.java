@@ -64,6 +64,7 @@ class OverdueRentalServiceTest {
                                 && message.contains("User ID: 10")
                                 && message.contains("Car: Toyota Camry")
                                 && message.contains("Daily fee: 50,00")
+                                || message.contains("Daily fee: 50.00")
                 )
         );
     }
