@@ -41,6 +41,31 @@ docker compose down
 
 `docker compose down -v` also deletes the database volume and its data.
 
+## Demo deployment to AWS EC2
+
+This deployment is intended for a short-lived project demo, not production. It runs the app and MySQL on one EC2 instance. The database is not managed or backed up, and the API uses plain HTTP. AWS charges for the EC2 instance, its storage, and network usage; check the estimate in your selected region before launching and terminate the instance when you are finished.
+
+1. Launch an Ubuntu EC2 instance with enough memory for both containers (at least 2 GiB is recommended). In its security group, allow SSH (`22`) only from your own IP and allow the app port (`8080`) for the users who need to test it. Do not open the MySQL port (`3306`).
+2. Connect over SSH, install Docker Engine and the Compose plugin using the [official Ubuntu instructions](https://docs.docker.com/engine/install/ubuntu/), then clone this repository and enter its directory.
+3. Create the environment file and set the production callback URL to the instance's reachable public address:
+
+   ```bash
+   cp .env.sample .env
+   nano .env
+   ```
+
+   Set the database values, a random `JWT_SECRET` of at least 32 bytes, Telegram credentials, a Stripe **test** secret key, and `APP_BASE_URL=http://<EC2-public-address>:8080`. Keep `.env` private and never commit it.
+4. Start the app and database:
+
+   ```bash
+   docker compose up -d --build
+   docker compose ps
+   ```
+
+5. Check `http://<EC2-public-address>:8080/health` and open `http://<EC2-public-address>:8080/swagger-ui/index.html`.
+
+The compose file keeps MySQL private to the Docker network and stores its data in the `mysql_data` volume on the instance. Replacing or terminating the instance can lose that data. This demo setup does not provide HTTPS, managed database backups, or high availability.
+
 ## Run locally
 
 Requirements: JDK 21, Docker Desktop (for Testcontainers), and a reachable MySQL database.
