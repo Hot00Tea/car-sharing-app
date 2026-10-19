@@ -1,6 +1,7 @@
 services:
   db:
     image: mysql:8.4
+    restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${MYSQLDB_DATABASE:?Set MYSQLDB_DATABASE in .env}
       MYSQL_USER: ${MYSQLDB_USER:?Set MYSQLDB_USER in .env}
@@ -17,6 +18,7 @@ services:
 
   app:
     build: .
+    restart: unless-stopped
     environment:
       MYSQLDB_DATABASE: ${MYSQLDB_DATABASE:?Set MYSQLDB_DATABASE in .env}
       MYSQLDB_USER: ${MYSQLDB_USER:?Set MYSQLDB_USER in .env}
@@ -26,7 +28,7 @@ services:
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:?Set TELEGRAM_CHAT_ID in .env}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?Set STRIPE_SECRET_KEY in .env}
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQLDB_DATABASE:?Set MYSQLDB_DATABASE in .env}
-      APP_BASE_URL: http://localhost:8080
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
     ports:
       - "8080:8080"
     depends_on:
