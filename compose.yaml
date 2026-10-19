@@ -1,0 +1,37 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${MYSQLDB_DATABASE:?Set MYSQLDB_DATABASE in .env}
+      MYSQL_USER: ${MYSQLDB_USER:?Set MYSQLDB_USER in .env}
+      MYSQL_PASSWORD: ${MYSQLDB_PASSWORD:?Set MYSQLDB_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQLDB_PASSWORD:?Set MYSQLDB_PASSWORD in .env}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u\"$${MYSQL_USER}\" -p\"$${MYSQL_PASSWORD}\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  app:
+    build: .
+    environment:
+      MYSQLDB_DATABASE: ${MYSQLDB_DATABASE:?Set MYSQLDB_DATABASE in .env}
+      MYSQLDB_USER: ${MYSQLDB_USER:?Set MYSQLDB_USER in .env}
+      MYSQLDB_PASSWORD: ${MYSQLDB_PASSWORD:?Set MYSQLDB_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:?Set TELEGRAM_BOT_TOKEN in .env}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:?Set TELEGRAM_CHAT_ID in .env}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?Set STRIPE_SECRET_KEY in .env}
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQLDB_DATABASE:?Set MYSQLDB_DATABASE in .env}
+      APP_BASE_URL: http://localhost:8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
