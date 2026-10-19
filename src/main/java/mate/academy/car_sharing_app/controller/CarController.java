@@ -30,7 +30,6 @@ public class CarController {
 
     private final CarService carService;
 
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'MANAGER')")
     @GetMapping
     @Operation(summary = "Get all cars", description = "Get a list of all available cars")
     public Page<CarResponseDto> findAll(Pageable pageable) {
