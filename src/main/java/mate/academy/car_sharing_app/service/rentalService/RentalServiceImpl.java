@@ -4,9 +4,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mate.academy.car_sharing_app.dto.rentalDto.RentalRequestDto;
 import mate.academy.car_sharing_app.dto.rentalDto.RentalResponseDto;
-import mate.academy.car_sharing_app.exception.CarException;
+import mate.academy.car_sharing_app.exception.EntityNotFoundException;
 import mate.academy.car_sharing_app.exception.RentalException;
-import mate.academy.car_sharing_app.exception.UserException;
 import mate.academy.car_sharing_app.mapper.RentalMapper;
 import mate.academy.car_sharing_app.model.car.Car;
 import mate.academy.car_sharing_app.model.payment.PaymentStatus;
@@ -50,11 +49,13 @@ public class RentalServiceImpl implements RentalService {
         checkUnpaidPayments(user);
 
         Car car = carRepository.findById(requestDto.getCarId()).orElseThrow(
-                () -> new CarException("Can't find car by id: " + requestDto.getCarId())
+                () -> new EntityNotFoundException("Car", "id", requestDto.getCarId())
         );
 
         if (car.getInventory() <= 0) {
-            throw new RentalException("No cars in stock");
+            throw new RentalException(
+                    "Car with id '%s' is out of stock".formatted(car.getId())
+            );
         }
         Rental rental = rentalMapper.toEntity(requestDto);
         rental.setRentalDate(LocalDate.now());
@@ -76,13 +77,15 @@ public class RentalServiceImpl implements RentalService {
         User user = getUserByEmail(email);
 
         Rental rental = rentalRepository.findById(rentalId).orElseThrow(
-                () -> new RentalException("Can`t find rental by id: " + rentalId)
+                () -> new EntityNotFoundException("Rental", "id", rentalId)
         );
 
         checkRentalOwnership(rental, user);
 
         if (rental.getActualReturnDate() != null) {
-            throw new RentalException("Rental has already been returned");
+            throw new RentalException(
+                    "Rental with id '%s' has already been returned".formatted(rentalId)
+            );
         }
 
         rental.setActualReturnDate(LocalDate.now());
@@ -115,13 +118,14 @@ public class RentalServiceImpl implements RentalService {
         User user = getUserByEmail(email);
 
         Rental rental = rentalRepository.findById(id).orElseThrow(
-                () -> new RentalException("Can`t find rental by id: " + id)
+                () -> new EntityNotFoundException("Rental", "id", id)
         );
 
         if (user.getRole() == CUSTOMER
                 && !rental.getUser().getId().equals(user.getId())) {
-            throw new UserException(
-                    "User is not allowed to access this rental"
+            throw new RentalException(
+                    "User '%s' is not allowed to access rental '%s'"
+                            .formatted(email, id)
             );
         }
 
@@ -213,14 +217,15 @@ public class RentalServiceImpl implements RentalService {
 
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(
-                () -> new UserException("Can`t find user by email: " + email)
+                () -> new EntityNotFoundException("User", "email", email)
         );
     }
 
     private void checkRentalOwnership(Rental rental, User user) {
         if (!rental.getUser().getId().equals(user.getId())) {
             throw new RentalException(
-                    "User is not allowed to access this rental"
+                    "User '%s' is not allowed to access rental '%s'"
+                            .formatted(user.getId(), rental.getId())
             );
         }
     }
@@ -233,7 +238,9 @@ public class RentalServiceImpl implements RentalService {
                 );
 
         if (hasUnpaidPayment) {
-            throw new RentalException("User has an unpaid payment");
+            throw new RentalException(
+                    "User with id '%s' has an unpaid payment".formatted(user.getId())
+            );
         }
     }
 }

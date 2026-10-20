@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import mate.academy.car_sharing_app.dto.paymentDto.PaymentRequestDto;
 import mate.academy.car_sharing_app.dto.paymentDto.PaymentResponseDto;
 import mate.academy.car_sharing_app.exception.PaymentException;
+import mate.academy.car_sharing_app.exception.EntityNotFoundException;
 import mate.academy.car_sharing_app.exception.RentalException;
-import mate.academy.car_sharing_app.exception.UserException;
 import mate.academy.car_sharing_app.mapper.PaymentMapper;
 import mate.academy.car_sharing_app.model.payment.Payment;
 import mate.academy.car_sharing_app.model.payment.PaymentStatus;
@@ -54,11 +54,14 @@ public class PaymentServiceImpl implements PaymentService {
         User user = getUserByEmail(email);
 
         Rental rental = rentalRepository.findById(requestDto.getRentalId()).orElseThrow(
-                () -> new RentalException("Can`t find rental by id: " + requestDto.getRentalId())
+                () -> new EntityNotFoundException("Rental", "id", requestDto.getRentalId())
         );
 
         if (!rental.getUser().getId().equals(user.getId())) {
-            throw new RentalException("User is not allowed to access this rental");
+            throw new RentalException(
+                    "User '%s' is not allowed to access rental '%s'"
+                            .formatted(user.getId(), rental.getId())
+            );
         }
 
         BigDecimal amountToPay = paymentAmountCalculator.calculate(
@@ -83,13 +86,14 @@ public class PaymentServiceImpl implements PaymentService {
         User user = getUserByEmail(email);
 
         Payment payment = paymentRepository.findById(id).orElseThrow(
-                () -> new PaymentException("Can`t find payment by id: " + id)
+                () -> new EntityNotFoundException("Payment", "id", id)
         );
 
         if (user.getRole() == CUSTOMER
                 && !payment.getRental().getUser().getId().equals(user.getId())) {
             throw new PaymentException(
-                    "User is not allowed to access this payment"
+                    "User '%s' is not allowed to access payment '%s'"
+                            .formatted(user.getId(), payment.getId())
             );
         }
 
@@ -113,14 +117,16 @@ public class PaymentServiceImpl implements PaymentService {
             return paymentRepository.findAllByRentalUserId(userId, pageable)
                     .map(paymentMapper::toDto);
         }
-        throw new PaymentException("Invalid payment filter");
+        throw new PaymentException(
+                "Unsupported payment filter for role '%s'".formatted(user.getRole())
+        );
     }
 
     @Override
     public PaymentResponseDto successPay(String sessionId) throws StripeException {
         
         Payment payment = paymentRepository.findBySessionId(sessionId).orElseThrow(
-                () -> new PaymentException("Can't find payment by session id: " + sessionId)
+                () -> new EntityNotFoundException("Payment", "session id", sessionId)
         );
 
         Session session = stripeService.findStripeSessionBySessionId(sessionId);
@@ -169,18 +175,20 @@ public class PaymentServiceImpl implements PaymentService {
         User user = getUserByEmail(email);
 
         Payment payment = paymentRepository.findById(paymentId).orElseThrow(
-                () -> new PaymentException("Can`t find payment by id: " + paymentId)
+                () -> new EntityNotFoundException("Payment", "id", paymentId)
         );
 
         if (payment.getStatus() != PaymentStatus.EXPIRED) {
             throw new PaymentException(
-                    "Payment can be renewed only if its status is EXPIRED"
+                    "Payment '%s' has status '%s'; only EXPIRED payments can be renewed"
+                            .formatted(paymentId, payment.getStatus())
             );
         }
 
         if (!payment.getRental().getUser().getId().equals(user.getId())) {
             throw new PaymentException(
-                    "User is not allowed to renew this payment"
+                    "User '%s' is not allowed to renew payment '%s'"
+                            .formatted(user.getId(), payment.getId())
             );
         }
 
@@ -199,7 +207,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(
-                () -> new UserException("Can`t find user by email: " + email)
+                () -> new EntityNotFoundException("User", "email", email)
         );
     }
 

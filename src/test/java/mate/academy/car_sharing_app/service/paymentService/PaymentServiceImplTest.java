@@ -10,6 +10,7 @@ import java.util.Optional;
 import mate.academy.car_sharing_app.dto.paymentDto.PaymentRequestDto;
 import mate.academy.car_sharing_app.dto.paymentDto.PaymentResponseDto;
 import mate.academy.car_sharing_app.exception.PaymentException;
+import mate.academy.car_sharing_app.exception.EntityNotFoundException;
 import mate.academy.car_sharing_app.exception.RentalException;
 import mate.academy.car_sharing_app.mapper.PaymentMapper;
 import mate.academy.car_sharing_app.model.payment.Payment;
@@ -205,7 +206,7 @@ class PaymentServiceImplTest {
         when(rentalRepository.findById(rentalId)).thenReturn(Optional.empty());
 
         assertThrows(
-                RentalException.class,
+                EntityNotFoundException.class,
                 () -> paymentService.createPayment(email, requestDto)
         );
         verify(paymentRepository, never()).save(any(Payment.class));
@@ -263,7 +264,7 @@ class PaymentServiceImplTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(paymentRepository.findById(paymentId)).thenReturn(Optional.of(payment));
 
-        assertThrows(PaymentException.class, () -> paymentService.renewPay(email, paymentId));
+        assertThrows(EntityNotFoundException.class, () -> paymentService.renewPay(email, paymentId));
         verify(paymentRepository, never()).save(any(Payment.class));
         verifyNoInteractions(stripeService);
     }

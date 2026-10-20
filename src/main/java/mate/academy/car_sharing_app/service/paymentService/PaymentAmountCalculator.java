@@ -26,7 +26,9 @@ public class PaymentAmountCalculator {
             return calculateFine(rental);
         }
 
-        throw new PaymentException("Unknown payment type");
+        throw new PaymentException(
+                "Unsupported payment type '%s'".formatted(paymentType)
+        );
     }
 
     private BigDecimal calculateRentalPayment(Rental rental) {
@@ -50,7 +52,10 @@ public class PaymentAmountCalculator {
         );
 
         if (overdueDays <= 0) {
-            throw new PaymentException("No overdue days");
+            throw new PaymentException(
+                    "Rental '%s' has no overdue days to fine"
+                            .formatted(rental.getId())
+            );
         }
 
         return fineMultiplier

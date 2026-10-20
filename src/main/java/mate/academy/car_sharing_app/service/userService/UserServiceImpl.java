@@ -7,7 +7,7 @@ import mate.academy.car_sharing_app.dto.userDto.UserResponseDto;
 import mate.academy.car_sharing_app.dto.userDto.UserRoleUpdateRequestDto;
 import mate.academy.car_sharing_app.dto.userDto.UserUpdateRequestDto;
 import mate.academy.car_sharing_app.exception.RegistrationException;
-import mate.academy.car_sharing_app.exception.UserException;
+import mate.academy.car_sharing_app.exception.EntityNotFoundException;
 import mate.academy.car_sharing_app.mapper.UserMapper;
 import mate.academy.car_sharing_app.model.user.Role;
 import mate.academy.car_sharing_app.model.user.User;
@@ -48,21 +48,13 @@ public class UserServiceImpl implements UserService {
             UserUpdateRequestDto requestDto) {
         User user = getUserByEmail(email);
 
-        if (StringUtils.hasText(requestDto.getFirstName())) {
-            user.setFirstName(requestDto.getFirstName());
+        if (StringUtils.hasText(requestDto.getEmail())
+                && !requestDto.getEmail().equalsIgnoreCase(user.getEmail())) {
+            checkEmailAvailability(requestDto.getEmail().toLowerCase());
         }
-
-        if (StringUtils.hasText(requestDto.getLastName())) {
-            user.setLastName(requestDto.getLastName());
-        }
-
+        userMapper.updateFromDto(requestDto, user);
         if (StringUtils.hasText(requestDto.getEmail())) {
-            String newEmail = requestDto.getEmail().toLowerCase();
-
-            if (!newEmail.equals(user.getEmail())) {
-                checkEmailAvailability(newEmail);
-                user.setEmail(newEmail);
-            }
+            user.setEmail(requestDto.getEmail().toLowerCase());
         }
 
         return userMapper.toDto(user);
@@ -73,30 +65,33 @@ public class UserServiceImpl implements UserService {
             Long id,
             UserRoleUpdateRequestDto requestDto) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new UserException("Can't find user by: " + id)
+                () -> new EntityNotFoundException("User", "id", id)
         );
 
-        user.setRole(requestDto.getRole());
+        userMapper.updateRoleFromDto(requestDto, user);
 
         return userMapper.toDto(user);
     }
 
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(
-                () -> new UserException("Can't find user by: " + email)
+                () -> new EntityNotFoundException("User", "email", email)
         );
     }
 
     private void validateRegistration(UserRegistrationRequestDto request) {
         if (!request.getPassword().equals(request.getRepeatPassword())) {
-            throw new RegistrationException("Passwords do not match");
+            throw new RegistrationException(
+                    "Passwords do not match for email '%s'"
+                            .formatted(request.getEmail())
+            );
         }
     }
 
     private void checkEmailAvailability(String email) {
         if (userRepository.existsByEmail(email)) {
             throw new RegistrationException(
-                    "User with email " + email + " already exists"
+                    "User with email '%s' already exists".formatted(email)
             );
         }
     }

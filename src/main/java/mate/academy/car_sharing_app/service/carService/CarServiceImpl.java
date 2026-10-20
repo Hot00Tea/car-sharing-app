@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mate.academy.car_sharing_app.dto.carDto.CarRequestDto;
 import mate.academy.car_sharing_app.dto.carDto.CarResponseDto;
-import mate.academy.car_sharing_app.exception.CarException;
+import mate.academy.car_sharing_app.exception.EntityNotFoundException;
 import mate.academy.car_sharing_app.mapper.CarMapper;
 import mate.academy.car_sharing_app.model.car.Car;
 import mate.academy.car_sharing_app.repository.CarRepository;
@@ -41,12 +41,7 @@ public class CarServiceImpl implements CarService {
     @Override
     public CarResponseDto updateCar(Long id, CarRequestDto carRequestDto) {
         Car car = getCarById(id);
-
-        car.setInventory(carRequestDto.getInventory());
-        car.setModel(carRequestDto.getModel());
-        car.setType(carRequestDto.getType());
-        car.setDailyFee(carRequestDto.getDailyFee());
-        car.setBrand(carRequestDto.getBrand());
+        carMapper.updateFromDto(carRequestDto, car);
 
         return carMapper.toDto(car);
     }
@@ -59,7 +54,7 @@ public class CarServiceImpl implements CarService {
 
     private Car getCarById(Long id) {
         return carRepository.findById(id).orElseThrow(
-                () -> new CarException("Can`t find car by id: " + id)
+                () -> new EntityNotFoundException("Car", "id", id)
         );
     }
 }

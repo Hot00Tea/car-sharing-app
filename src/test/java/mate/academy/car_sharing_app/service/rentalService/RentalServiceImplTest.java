@@ -3,9 +3,8 @@ package mate.academy.car_sharing_app.service.rentalService;
 import mate.academy.car_sharing_app.dto.rentalDto.RentalCarResponseDto;
 import mate.academy.car_sharing_app.dto.rentalDto.RentalRequestDto;
 import mate.academy.car_sharing_app.dto.rentalDto.RentalResponseDto;
-import mate.academy.car_sharing_app.exception.CarException;
+import mate.academy.car_sharing_app.exception.EntityNotFoundException;
 import mate.academy.car_sharing_app.exception.RentalException;
-import mate.academy.car_sharing_app.exception.UserException;
 import mate.academy.car_sharing_app.mapper.RentalMapper;
 import mate.academy.car_sharing_app.model.car.Car;
 import mate.academy.car_sharing_app.model.payment.PaymentStatus;
@@ -135,7 +134,7 @@ class RentalServiceImplTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(
-                UserException.class,
+                EntityNotFoundException.class,
                 () -> rentalService.createRental(USER_EMAIL, requestDto)
         );
 
@@ -175,7 +174,7 @@ class RentalServiceImplTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(
-                CarException.class,
+                EntityNotFoundException.class,
                 () -> rentalService.createRental(USER_EMAIL, requestDto)
         );
 
@@ -248,7 +247,7 @@ class RentalServiceImplTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(
-                RentalException.class,
+                EntityNotFoundException.class,
                 () -> rentalService.returnRental(USER_EMAIL, rentalId)
         );
 
@@ -315,7 +314,7 @@ class RentalServiceImplTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(
-                RentalException.class,
+                EntityNotFoundException.class,
                 () -> rentalService.getById(USER_EMAIL, rentalId)
         );
 
@@ -340,7 +339,7 @@ class RentalServiceImplTest {
                 .thenReturn(Optional.of(rental));
 
         assertThrows(
-                UserException.class,
+                RentalException.class,
                 () -> rentalService.getById(USER_EMAIL, rentalId)
         );
 
