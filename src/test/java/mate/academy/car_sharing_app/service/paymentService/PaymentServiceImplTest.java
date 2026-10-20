@@ -264,7 +264,7 @@ class PaymentServiceImplTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(paymentRepository.findById(paymentId)).thenReturn(Optional.of(payment));
 
-        assertThrows(EntityNotFoundException.class, () -> paymentService.renewPay(email, paymentId));
+        assertThrows(PaymentException.class, () -> paymentService.renewPay(email, paymentId));
         verify(paymentRepository, never()).save(any(Payment.class));
         verifyNoInteractions(stripeService);
     }
@@ -305,7 +305,7 @@ class PaymentServiceImplTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(paymentRepository.findById(paymentId)).thenReturn(Optional.empty());
 
-        assertThrows(PaymentException.class, () -> paymentService.renewPay(email, paymentId));
+        assertThrows(EntityNotFoundException.class, () -> paymentService.renewPay(email, paymentId));
         verify(paymentRepository, never()).save(any(Payment.class));
         verifyNoInteractions(stripeService);
     }
