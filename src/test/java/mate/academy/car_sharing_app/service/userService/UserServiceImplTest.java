@@ -5,7 +5,7 @@ import mate.academy.car_sharing_app.dto.userDto.UserResponseDto;
 import mate.academy.car_sharing_app.dto.userDto.UserRoleUpdateRequestDto;
 import mate.academy.car_sharing_app.dto.userDto.UserUpdateRequestDto;
 import mate.academy.car_sharing_app.exception.RegistrationException;
-import mate.academy.car_sharing_app.exception.UserException;
+import mate.academy.car_sharing_app.exception.EntityNotFoundException;
 import mate.academy.car_sharing_app.mapper.UserMapper;
 import mate.academy.car_sharing_app.model.user.Role;
 import mate.academy.car_sharing_app.model.user.User;
@@ -134,7 +134,7 @@ class UserServiceImplTest {
         when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
 
         assertThrows(
-                UserException.class,
+                EntityNotFoundException.class,
                 () -> userService.getCurrentUser(EMAIL)
         );
 
@@ -155,10 +155,9 @@ class UserServiceImplTest {
         UserResponseDto result = userService.updateUser(EMAIL, request);
 
         assertNotNull(result);
-        assertEquals("Mike", user.getFirstName());
-        assertEquals("Brown", user.getLastName());
         assertEquals("new@test.com", user.getEmail());
 
+        verify(userMapper).updateFromDto(request, user);
         verify(userMapper).toDto(user);
     }
 
@@ -174,9 +173,8 @@ class UserServiceImplTest {
 
         userService.updateUser(EMAIL, request);
 
-        assertEquals("John", user.getFirstName());
-        assertEquals("Smith", user.getLastName());
         assertEquals(EMAIL, user.getEmail());
+        verify(userMapper).updateFromDto(request, user);
     }
 
     @Test
@@ -206,7 +204,7 @@ class UserServiceImplTest {
         UserResponseDto result = userService.updateUserRole(USER_ID, request);
 
         assertNotNull(result);
-        assertEquals(Role.MANAGER, user.getRole());
+        verify(userMapper).updateRoleFromDto(request, user);
         verify(userMapper).toDto(user);
     }
 
@@ -218,7 +216,7 @@ class UserServiceImplTest {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
         assertThrows(
-                UserException.class,
+                EntityNotFoundException.class,
                 () -> userService.updateUserRole(USER_ID, request)
         );
 

@@ -1,5 +1,7 @@
 package mate.academy.car_sharing_app.dto.paymentDto;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 import mate.academy.car_sharing_app.model.payment.PaymentType;
@@ -8,7 +10,10 @@ import mate.academy.car_sharing_app.model.payment.PaymentType;
 @Setter
 public class PaymentRequestDto {
 
+    @NotNull
+    @Positive
     private Long rentalId;
 
+    @NotNull
     private PaymentType type;
 }

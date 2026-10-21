@@ -11,15 +11,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(CarException.class)
-  public ResponseEntity<Map<String, String>> handleCarException(
-          CarException exception) {
-    return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage());
-  }
-
-  @ExceptionHandler(UserException.class)
-  public ResponseEntity<Map<String, String>> handleUserException(
-          UserException exception) {
+  @ExceptionHandler(EntityNotFoundException.class)
+  public ResponseEntity<Map<String, String>> handleEntityNotFoundException(
+          EntityNotFoundException exception) {
     return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage());
   }
 
@@ -38,7 +32,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(RegistrationException.class)
   public ResponseEntity<Map<String, String>> handleRegistrationException(
           RegistrationException exception) {
-    return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+    return buildResponse(HttpStatus.CONFLICT, exception.getMessage());
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

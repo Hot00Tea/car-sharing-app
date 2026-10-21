@@ -2,7 +2,7 @@ package mate.academy.car_sharing_app.service.carService;
 
 import mate.academy.car_sharing_app.dto.carDto.CarRequestDto;
 import mate.academy.car_sharing_app.dto.carDto.CarResponseDto;
-import mate.academy.car_sharing_app.exception.CarException;
+import mate.academy.car_sharing_app.exception.EntityNotFoundException;
 import mate.academy.car_sharing_app.mapper.CarMapper;
 import mate.academy.car_sharing_app.model.car.Car;
 import mate.academy.car_sharing_app.repository.CarRepository;
@@ -109,7 +109,7 @@ class CarServiceImplTest {
     void findById_shouldThrowWhenCarDoesNotExist() {
         when(carRepository.findById(CAR_ID)).thenReturn(Optional.empty());
 
-        assertThrows(CarException.class, () -> carService.findById(CAR_ID));
+        assertThrows(EntityNotFoundException.class, () -> carService.findById(CAR_ID));
 
         verify(carMapper, never()).toDto(car);
     }
@@ -127,11 +127,7 @@ class CarServiceImplTest {
         CarResponseDto result = carService.updateCar(CAR_ID, requestDto);
 
         assertNotNull(result);
-        assertEquals("BMW", car.getBrand());
-        assertEquals("X5", car.getModel());
-        assertEquals(3, car.getInventory());
-        assertEquals(BigDecimal.valueOf(100), car.getDailyFee());
-
+        verify(carMapper).updateFromDto(requestDto, car);
         verify(carMapper).toDto(car);
     }
 
@@ -140,7 +136,7 @@ class CarServiceImplTest {
         when(carRepository.findById(CAR_ID)).thenReturn(Optional.empty());
 
         assertThrows(
-                CarException.class,
+                EntityNotFoundException.class,
                 () -> carService.updateCar(CAR_ID, requestDto)
         );
 
@@ -161,7 +157,7 @@ class CarServiceImplTest {
         when(carRepository.findById(CAR_ID)).thenReturn(Optional.empty());
 
         assertThrows(
-                CarException.class,
+                EntityNotFoundException.class,
                 () -> carService.deleteById(CAR_ID)
         );
 
