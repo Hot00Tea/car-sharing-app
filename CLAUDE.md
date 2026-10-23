@@ -25,6 +25,8 @@ Package root: `mate.academy.car_sharing_app`. Layering is controller → service
 
 - **Auth**: stateless JWT. `JwtAuthenticationFilter` validates the bearer token; the user's email is the principal. Controllers pass `authentication.getName()` (email) into services, and services load the `User` by email.
 - **Authorization is split in two places**: `SecurityConfig` holds the public endpoint list (`/register`, `/login`, `/health`, `GET /cars`, `/payments/success`, `/payments/cancel`, Swagger) and controllers use `@PreAuthorize` for MANAGER-only actions. Per-record ownership (a CUSTOMER only sees their own rentals/payments; MANAGER sees all and can filter by `user_id`) is enforced inside the service implementations by checking `user.getRole()`.
+- **Roles**: registration always creates a `CUSTOMER`, and Liquibase seeds no users. Changing roles (`PUT /users/{id}/role`) requires MANAGER, so the first manager must be set directly in the `users` table.
+- **Transactions**: `CarServiceImpl`, `RentalServiceImpl` and `UserServiceImpl` are class-level `@Transactional` (the `jakarta.transaction` one); `PaymentServiceImpl` is not, and its methods mix DB writes with Stripe API calls.
 - **Errors**: services throw `EntityNotFoundException` (404), `RentalException` / `PaymentException` (400), `RegistrationException` (409); `GlobalExceptionHandler` maps them to `{status, error, message}` JSON.
 - **Rental flow**: creating a rental is blocked if the user has any `PENDING` or `EXPIRED` payment; it decrements `Car.inventory` and sends a Telegram notification. Returning sets `actualReturnDate` and increments inventory.
 - **External integrations** are behind interfaces so they can be mocked: `StripeService` (Checkout sessions; success/cancel URLs built from `app.base-url`) and `NotificationService` (`TelegramNotificationService`).
@@ -34,6 +36,10 @@ Package root: `mate.academy.car_sharing_app`. Layering is controller → service
 
 - Rental payment amounts use `ChronoUnit.DAYS.between(rentalDate, returnDate)`, so the rental period is calculated as the number of days between the two dates. Late-return fines use overdue days multiplied by the car's daily fee and `FINE_MULTIPLIER`; a fine cannot be created when there are no overdue days. This logic lives in `PaymentAmountCalculator`.
 - Stripe success redirects are not trusted by themselves: `successPay` retrieves the Checkout Session from Stripe and changes the payment to `PAID` only when Stripe reports `payment_status=paid`. Pending payments are checked for expiration every minute. Renewal is allowed only for `EXPIRED` payments and updates the existing payment record with a new Checkout Session.
+
+## Git workflow
+
+Never commit to `main`. Create a branch (`fix/...`, `docs/...`, `feature/...`) first, push it and merge via a GitHub PR. Commit subjects use a tag prefix: `[FIX] ...`, `[DOCS] ...`. CI (`.github/workflows/ci.yml`) runs `./mvnw clean verify` on pushes to `main` and on PRs.
 
 ## Configuration
 
